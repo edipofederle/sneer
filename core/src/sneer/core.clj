@@ -5,12 +5,21 @@
            [sneer.tuples Tuple Tuples TuplePublisher TupleSubscriber]
            [rx.subjects ReplaySubject]))
 
+(defmacro reify+ [iface & body]
+  `(~'reify ~iface ~@(apply concat (map #(list (macroexpand-1 %)) body))))
+
+(defmacro tuple-attr [a]
+  `(~a [~'this]
+       (get ~'attrs ~(name a))))
+
 (defn ->tuple [attrs]
-  (reify Tuple
-    (intent [this]
-      (get attrs "intent"))
-    (value [this]
-      (get attrs "value"))))
+  (reify+ Tuple
+    (tuple-attr intent)
+    (tuple-attr value)))
+
+(defmacro publisher-attr [a]
+  `(~a [~'this ~a]
+       (~'with ~(name a) ~a)))
 
 (defn new-tuple-publisher
   ([tuples] (new-tuple-publisher tuples {}))
@@ -18,13 +27,10 @@
     (letfn
       [(with [attr value]
           (new-tuple-publisher tuples (assoc attrs attr value)))]
-      (reify TuplePublisher
-        (intent [this intent]
-          (with "intent" intent))
-        (audience [this audience]
-          (with "audience" audience))
-        (value [this value]
-          (with "value" value))
+      (reify+ TuplePublisher
+        (publisher-attr intent)
+        (publisher-attr audience)
+        (publisher-attr value)
         (pub [this value]
             (.. this (value value) pub))
         (pub [this]
@@ -48,11 +54,10 @@
 
 (defn new-sneer-admin [tuples]
   (reify SneerAdmin
-      (initialize [this pk]
-        (reify Sneer
-          (tuples [this]
-            (new-tuples tuples))))))
+    (initialize [this pk]
+      (reify Sneer
+        (tuples [this]
+          (new-tuples tuples))))))
 
 (defn new-session []
   (ReplaySubject/create))
-
