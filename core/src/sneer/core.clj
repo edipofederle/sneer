@@ -6,7 +6,7 @@
            [rx.subjects ReplaySubject]))
 
 (defmacro reify+ [iface & body]
-  `(~'reify ~iface ~@(map #(macroexpand-1 %) body)))
+  `(~'reify ~iface ~@(map macroexpand-1 body)))
 
 (defmacro tuple-attr [a]
   `(~a [~'this]
