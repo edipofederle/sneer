@@ -5,8 +5,8 @@
            [sneer.tuples Tuple Tuples TuplePublisher TupleSubscriber]
            [rx.subjects ReplaySubject]))
 
-(defmacro reify+ [iface & body]
-  `(~'reify ~iface ~@(map macroexpand-1 body)))
+(defmacro reify+ [& body]
+  `(reify ~@(map macroexpand-1 body)))
 
 (defmacro tuple-attr [a]
   `(~a [~'this]
